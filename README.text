@@ -1,7 +1,0 @@
-This program is created using Java and manipulates a MySQL database. The program is console-based
-and the user can control it by using commands such as "get, add, remove, edit". The user
-needs to set up a MySQL database on their machine before being able to use this program. The
-login infromation requires the user knows their MySQL username, password, server(usually "localhost"), database name, and port number. The idea behind this progam is people who
-consistently fish need a way to keep track of their records from previous years, this 
-program is an easy solution, all of the data is stored in a database table (the table representing
-a certain month and there should be 12 tables in the database) that includes the columns: day (of month), location, baits used, weather conditions, quantity of fish, time of day, water temperature, air temperature, and average mass. Each row created represents a day out of the month. Once the data is entered then the user can easily retrieve it in the future and study the fish patterns. This program is used to help fisher-people improve their craft but it can also be adjusted to different fields depending on what you want to study.
