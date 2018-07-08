@@ -1,3 +1,4 @@
+
 import java.sql.*;
 import java.util.Scanner;  
 
@@ -5,38 +6,38 @@ public class Connect
 {
 	private Connection connection;
 	
-	private String username, password, server, port, database;
+	//login variables
+	public static String username, password, server, port, database;
 
+	//connect constructor
 	public Connect() throws SQLException
-	{		
+	{	
 		String connectionString;
 		
-		//value for connectionString
-		username = execute.inter.getUsername();
-		password = execute.inter.getPassword();
-		database = execute.inter.getDatabase();
-		server = execute.inter.getServer();
-		port = execute.inter.getPort();
-		
+		//create the String to connect to database
 		connectionString = "jdbc:mysql://" + server +":" + port + "/" + database + "?autoReconnect=true&useSSL=false";
 
 		//create connection
 		connection = DriverManager
 				.getConnection(connectionString,username, password);
 		
+		System.out.println("Connected to: " + database + " successfully!");
+		
 		if (connection == null) 
 		{
 			System.out.println("Connection to: " + database + " failed.");
 		} 
 	}
-	public void editSql() throws SQLException
+	public void editSql(String dayTemp, String monthTemp, String whatTemp, String valueTemp) throws SQLException
 	{
 		Scanner scan = new Scanner(System.in);
 		
 		String month, day, what, value;
 		
-		System.out.print("Month to use: ");
-		month = scan.nextLine();
+		day = dayTemp;
+		month = monthTemp;
+		what = whatTemp;
+		value = valueTemp;
 		
 		//check if month value is valid
 		if(!(checkMonth(month)))
@@ -45,21 +46,12 @@ public class Connect
 			return;
 		}
 		
-		System.out.print("Day to use: ");
-		day = scan.nextLine();
-		
 		//check if the day exists
-		if(checkDayEdit(day,month))
+		if(!(checkDay(day,month)))
 		{
-			System.out.println("Day is not availible");
+			System.out.println("Day is not found");
 			return;
 		}
-		
-		System.out.print("What to edit: ");
-		what = scan.nextLine().toLowerCase();
-		
-		System.out.print("New value: ");
-		value = scan.nextLine();
 		
 		//create SQL command
 		String query = "UPDATE " + month + " SET " + what + " = '" + value + "' WHERE day = " + day;
@@ -72,14 +64,15 @@ public class Connect
 					
 		System.out.println("Successfully entered String data!");
 	}
-	public void getSql() throws SQLException
+	public void getSql(String monthTemp, String dayTemp, String whatTemp) throws SQLException
 	{
 		Scanner scan = new Scanner(System.in);
 		
-		String month, day, what;
+		String month, day, what, results = null;
 		
-		System.out.print("Month to use: ");
-		month = scan.nextLine();
+		month = monthTemp;
+		day = dayTemp;
+		what = whatTemp;
 		
 		//check if month value is valid
 		if(!(checkMonth(month)))
@@ -88,20 +81,15 @@ public class Connect
 			return;
 		}
 		
-		System.out.print("Day to use: ");
-		day = scan.nextLine();
-		
 		//check if day value exists
-		if(!(checkDayEdit(day,month)))
+		if(!(checkDay(day,month)))
 		{
-			System.out.println("Day is not availible");
+			System.out.println("Day is not found");
+			return;
 		}
 		
 		else
 		{
-			System.out.print("What to get ('all' to get everything): ");
-			what = scan.nextLine();
-		
 			//create SQL command
 			String query = "SELECT * FROM " + month + " WHERE day = " + day + ";";
 		
@@ -126,6 +114,16 @@ public class Connect
 					System.out.println("Temp: " + rs.getString(7) + " degrees");
 					System.out.println("Water Temp: " + rs.getString(8) + " degrees");
 					System.out.println("Weight: " + rs.getString(9));
+					
+					results = ("Location: " + rs.getString(2)
+					+ "\nBaits: " + rs.getString(3)
+					+ "\nConditions: " + rs.getString(4)
+					+ "\nAmount: " + rs.getString(5)
+					+ "\nTime: " + rs.getString(6)
+					+ "\nTemp: " + rs.getString(7) + " degrees"
+					+ "\nWater Temp: " + rs.getString(8) + " degrees"
+					+ "\nWeight: " + rs.getString(9));
+					
 				}
 			}
 		
@@ -135,28 +133,39 @@ public class Connect
 				{
 					//get a single column in the table
 					System.out.println(rs.getString(what));
+					results = (rs.getString(what));
 				}
 			
 			}
+			getGUI.results = results;
+			
 		}
 	}
-	public void addSql() throws SQLException
+	public void addSql(String monthTemp,String locationTemp,String dayTemp,
+			String baitsTemp,String conditionsTemp,String timeTemp,
+			String amountTemp,String tempTemp,String watertempTemp,
+			String weightTemp) throws SQLException
 	{
 		Scanner scan = new Scanner(System.in);
 		
 		String month, location, day, baits, conditions, time, amount, temp, watertemp, weight;
 		
-		System.out.print("Month to use: ");
-		month = scan.nextLine();
+		month = monthTemp;
+		location = locationTemp;
+		day = dayTemp;
+		baits = baitsTemp;
+		conditions = conditionsTemp;
+		time = timeTemp;
+		amount = amountTemp;
+		temp = tempTemp;
+		watertemp = watertempTemp;
+		weight = weightTemp;
 		
 		if(!(checkMonth(month)))
 		{
 			System.out.println("Enter a valid month!");
 			return;
 		}
-		
-		System.out.print("Day to use ('next' to get next day): ");
-		day = scan.nextLine();
 		
 		if(day.equals("next"))
 		{
@@ -169,36 +178,12 @@ public class Connect
 		else
 		{	
 			//check if day is available
-			if(checkDayAdd(day, month))
+			if(checkDay(day, month))
 			{
-				System.out.println("Day is not availible");
+				System.out.println("Day is already taken");
 				return;
 			}
 		}
-		
-		System.out.print("Location(s): ");
-		location = scan.nextLine();
-		
-		System.out.print("Baits: ");
-		baits = scan.nextLine();
-		
-		System.out.print("Conditions: ");
-		conditions = scan.nextLine();
-		
-		System.out.print("Amount: ");
-		amount = scan.nextLine();
-		
-		System.out.print("Time: ");
-		time = scan.nextLine();
-		
-		System.out.print("Temperature: ");
-		temp = scan.nextLine();
-		
-		System.out.print("Water Temperature: ");
-		watertemp = scan.nextLine();
-		
-		System.out.print("Average size of bass: ");
-		weight = scan.nextLine();
 		
 		String query = "INSERT INTO "+ month + "(day, location,baits,conditions,amount,time,temp,watertemp,weight)"
 				+ "VALUES("+day+",'"+location+"','"+baits+"','"+conditions+"',"+amount+",'"+time+"','"+temp+"','"+watertemp+"','"+weight+"'"+");";
@@ -211,14 +196,14 @@ public class Connect
 		
 		System.out.println("Successfully added data!");
 	}
-	public void removeSql() throws SQLException
+	public void removeSql(String monthTemp,String dayTemp) throws SQLException
 	{
 		Scanner scan = new Scanner(System.in);
 		
 		String month, day;
 		
-		System.out.print("Month to use: ");
-		month = scan.nextLine();
+		month = monthTemp;
+		day = dayTemp;
 		
 		//check if month value is valid
 		if(!(checkMonth(month)))
@@ -227,20 +212,15 @@ public class Connect
 			return;
 		}
 		
-		System.out.print("Day to use: ");
-		day = scan.nextLine();
-		
 		//check if the day exists
-		if(checkDayEdit(day,month))
+		if(!(checkDay(day,month)))
 		{
-			System.out.println("Day is not availible");
+			System.out.println("Day is not found");
 			return;
 		}
 		
 		//create SQL command
 		String query = "DELETE FROM " + month + " WHERE day = " + day + ";";
-		
-		System.out.println(query);
 		
 		// create the java statement for SQL
 		Statement st = connection.createStatement();
@@ -297,9 +277,9 @@ public class Connect
 		}
 		return exists;
 	}
-	public boolean checkDayEdit(String day, String month) throws SQLException
+	public boolean checkDay(String day, String month) throws SQLException
 	{
-		boolean dayTaken = true; 
+		boolean dayTaken = false; 
 		
 		int dayInt = Integer.parseInt(day);
 		
@@ -308,62 +288,51 @@ public class Connect
 		//check if day is part of month
 		if((month.equals("january") && dayInt > 31) || (month.equals("january") && dayInt < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else if((month.equals("febuary") && dayInt > 28)  || (month.equals("febuary") && dayInt < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else if((month.equals("march") && dayInt > 31) || (month.equals("march") && dayInt < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else if((month.equals("april") && dayInt > 30) || (month.equals("april") && dayInt  < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else if((month.equals("may") && dayInt > 31) || (month.equals("may") && dayInt < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else if(( month.equals("june") && dayInt > 30) || ( month.equals("june") && dayInt < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else if((month.equals("july") && dayInt > 31) || (month.equals("july") && dayInt < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else if((month.equals("august") && dayInt > 31) || (month.equals("august") && dayInt < 1))
 		{
-			dayTaken = true;
+			dayTaken = false;
 			return dayTaken;
 		}
 		else if((month.equals("september") && dayInt > 30) || (month.equals("september") && dayInt < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else if((month.equals("october") && dayInt > 31) || (month.equals("october") && dayInt < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else if((month.equals("november") && dayInt > 30) || (month.equals("november") && dayInt < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else if((month.equals("december") && dayInt > 31) || (month.equals("december") && dayInt < 1))
 		{
-			dayTaken = true;
 			return dayTaken;
 		}
 		else
@@ -381,110 +350,14 @@ public class Connect
 		    {	    	
 		    	if(rs.getString(1).equals(day))
 		    	{
-		    		dayTaken = false;
-		    	}
-		    	else
-		    	{
 		    		dayTaken = true;
 		    	}
 		    }
 		   
 		    st.close();
-		    
-			return dayTaken;
-		}
-	}
-	public boolean checkDayAdd(String day, String month) throws SQLException
-	{
-		boolean dayTaken = false; 
-		
-		int dayInt = Integer.parseInt(day);
-		
-		month = month.toLowerCase();
-		
-		//check if day exists in month
-		if((month.equals("january") && dayInt > 31) || (month.equals("january") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if((month.equals("febuary") && dayInt > 28)  || (month.equals("febuary") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if((month.equals("march") && dayInt > 31) || (month.equals("march") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if((month.equals("april") && dayInt > 30) || (month.equals("april") && dayInt  < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if((month.equals("may") && dayInt > 31) || (month.equals("may") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if(( month.equals("june") && dayInt > 30) || ( month.equals("june") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if((month.equals("july") && dayInt > 31) || (month.equals("july") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if((month.equals("august") && dayInt > 31) || (month.equals("august") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if((month.equals("september") && dayInt > 30) || (month.equals("september") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if((month.equals("october") && dayInt > 31) || (month.equals("october") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if((month.equals("november") && dayInt > 30) || (month.equals("november") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else if((month.equals("december") && dayInt > 31) || (month.equals("december") && dayInt < 1))
-		{
-			dayTaken = true;
-			return dayTaken;
-		}
-		else
-		{
-			//create the SQL query statement
-			String query = "SELECT * FROM "+ month + ";";
-		
-			Statement st = connection.createStatement();
-		      
-		    // execute the query, and get a java resultset
-		    ResultSet rs = st.executeQuery(query);
 
-			//check if the day hasn't been entered yet
-		    while (rs.next())
-		    {	    	
-		    	if(rs.getString(1).equals(day))
-		    	{
-		    		dayTaken = true;
-		    	}
-		    }
-		   
-		    st.close();
-			
 			return dayTaken;
 		}
+
 	}
 }
